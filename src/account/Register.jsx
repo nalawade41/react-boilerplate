@@ -95,6 +95,14 @@ function Register({ history }) {
                                 <ErrorMessage name="confirmPassword" component="div" className="invalid-feedback" />
                             </div>
                         </div>
+                        <div className="form-group">
+                            <label>Register As</label>
+                            <Field name="role" component="select" className={'form-control' + (errors.acceptTerms && touched.acceptTerms ? ' is-invalid' : '')}>
+                                <option value="influencer">Influencer</option>
+                                <option value="advertiser">Advertiser</option>
+                            </Field>
+                            <ErrorMessage name="role" component="div" className="invalid-feedback" />
+                        </div>
                         <div className="form-group form-check">
                             <Field type="checkbox" name="acceptTerms" id="acceptTerms" className={'form-check-input ' + (errors.acceptTerms && touched.acceptTerms ? ' is-invalid' : '')} />
                             <label htmlFor="acceptTerms" className="form-check-label">Accept Terms & Conditions</label>

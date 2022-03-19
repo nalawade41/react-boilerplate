@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Link } from 'react-router-dom';
 
 import { accountService } from '@/_services';
@@ -6,6 +6,14 @@ import { accountService } from '@/_services';
 function Details({ match }) {
     const { path } = match;
     const user = accountService.userValue;
+
+    useEffect(() => {
+        loadUserDetails();
+    });
+
+    const loadUserDetails = () => {
+        accountService.getById(user.id)
+    };
 
     return (
         <div>

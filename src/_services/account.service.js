@@ -1,10 +1,10 @@
 import { BehaviorSubject } from 'rxjs';
 import config from 'config';
-import { fetchWrapper, history } from '@/_helpers';
+import { fetchWrapper, history, storageHandler } from '@/_helpers';
 import { Role } from '../_helpers/role';
 
 const userSubject = new BehaviorSubject(null);
-const baseUrl = `${config.apiUrl}/user`;
+const baseUrl = `${process.env.REACT_APP_API_URL}/user`;
 
 export const accountService = {
     login,
@@ -27,10 +27,19 @@ export const accountService = {
 function login(email, password) {
     return fetchWrapper.post(`${baseUrl}/login`, { email, password })
         .then(user => {
-            // publish user to subscribers and start timer to refresh token
-            //TODO: This should come from backend but for now map every user as admin
-            user.role = Role.Admin;
+
+            //TODO: need to remove this code once we assign role to one user
+            if (user.data.roles.length === 0) {
+                user.data.role = Role.Admin.toLowerCase();;
+            } else {
+                user.data.role = user.data.roles[0].name.toLowerCase();
+            }
+
             userSubject.next(user);
+            storageHandler.setToken(userSubject.value.access_token);
+            storageHandler.setUserID(userSubject.value.data.id);
+            storageHandler.setUserRole(userSubject.value.data.role);
+            storageHandler.setEmail(userSubject.value.data.email);
             startRefreshTokenTimer();
             return user;
         });
@@ -38,8 +47,9 @@ function login(email, password) {
 
 function logout() {
     // revoke token, stop refresh timer, publish null to user subscribers and redirect to login page
-    fetchWrapper.post(`${baseUrl}/revoke-token`, {});
+    fetchWrapper.post(`${baseUrl}/logout`, {});
     stopRefreshTokenTimer();
+    storageHandler.deleteToken();
     userSubject.next(null);
     history.push('/account/login');
 }
@@ -47,8 +57,19 @@ function logout() {
 function refreshToken() {
     return fetchWrapper.post(`${baseUrl}/refresh-token`, {})
         .then(user => {
+            //TODO: need to remove this code once we assign role to one user
+            if (user.data.roles.length === 0) {
+                user.data.role = Role.Admin.toLowerCase();;
+            } else {
+                user.data.role = user.data.roles[0].name.toLowerCase();;
+            }
+
             // publish user to subscribers and start timer to refresh token
             userSubject.next(user);
+            storageHandler.setToken(userSubject.value.access_token);
+            storageHandler.setUserID(userSubject.value.data.id);
+            storageHandler.setUserRole(userSubject.value.data.role);
+            storageHandler.setEmail(userSubject.value.data.email);
             startRefreshTokenTimer();
             return user;
         });
@@ -117,7 +138,7 @@ let refreshTokenTimeout;
 
 function startRefreshTokenTimer() {
     // set a timeout to refresh the token a minute before it expires
-    refreshTokenTimeout = setTimeout(refreshToken, userSubject.value.expires_in);
+    refreshTokenTimeout = setTimeout(refreshToken, userSubject.value.expires_in * 1000);
 }
 
 function stopRefreshTokenTimer() {

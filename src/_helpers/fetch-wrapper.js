@@ -1,6 +1,6 @@
 import config from 'config';
 import { accountService } from '@/_services';
-
+import { storageHandler } from './storage';
 export const fetchWrapper = {
     get,
     post,
@@ -20,7 +20,6 @@ function post(url, body) {
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader(url) },
-        credentials: 'include',
         body: JSON.stringify(body)
     };
     return fetch(url, requestOptions).then(handleResponse);
@@ -46,13 +45,17 @@ function _delete(url) {
 
 // helper functions
 function authHeader(url) {
-    // return auth header with jwt if user is logged in and request is to the api url
     const user = accountService.userValue;
-    const isLoggedIn = user && user.jwtToken;
-    const isApiUrl = url.startsWith(config.apiUrl);
+    const isLoggedIn = user && user.access_token;
+    const isApiUrl = url.startsWith(process.env.REACT_APP_API_URL);
     if (isLoggedIn && isApiUrl) {
-        return { Authorization: `Bearer ${user.jwtToken}` };
+        return { Authorization: `Bearer ${user.access_token}` };
     } else {
+        // if not logged in get previous token and check if session is still active
+        const token = storageHandler.getToken();
+        if (token) {
+            return { Authorization: `Bearer ${token}` };
+        }
         return {};
     }
 }
