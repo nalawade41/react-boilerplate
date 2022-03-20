@@ -11,6 +11,13 @@
         "start": "webpack-dev-server --open"
     },
     "dependencies": {
+        "@emotion/react": "^11.8.2",
+        "@emotion/styled": "^11.8.1",
+        "@mui/core": "^5.0.0-alpha.54",
+        "@mui/icons-material": "^5.5.1",
+        "@mui/material": "^5.5.1",
+        "@mui/x-data-grid": "^5.6.1",
+        "@mui/x-data-grid-generator": "^5.6.1",
         "add": "^2.0.6",
         "dotenv-webpack": "^7.1.0",
         "formik": "^2.1.4",

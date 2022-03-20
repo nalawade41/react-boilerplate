@@ -3,6 +3,7 @@ import * as IoIcons from 'react-icons/io';
 import * as AiIcons from 'react-icons/ai';
 import * as CgIcons from 'react-icons/cg';
 import * as RiIcons from 'react-icons/ri';
+import * as MdIcons from 'react-icons/md';
 import { accountService } from '@/_services';
 import { storageHandler } from '@/_helpers';
 
@@ -32,8 +33,22 @@ export const SidebarData = [
         visible: shouldVisible(['admin', 'influencer', 'advertiser']),
     },
     {
+        title: 'Proposal',
+        path: '/proposal',
+        icon: <CgIcons.CgProductHunt />,
+        class: 'nav-text',
+        visible: shouldVisible(['admin', 'influencer', 'advertiser']),
+    },
+    {
+        title: 'Campaign',
+        path: '/campaign',
+        icon: <MdIcons.MdOutlineCampaign />,
+        class: 'nav-text',
+        visible: shouldVisible(['admin', 'influencer', 'advertiser']),
+    },
+    {
         title: 'Admin',
-        path: '/admin',
+        path: '/admin/users',
         icon: <RiIcons.RiAdminLine />,
         class: 'nav-text',
         visible: shouldVisible(['admin']), 
@@ -44,6 +59,6 @@ export const SidebarData = [
         icon: <IoIcons.IoMdLogOut />,
         class: 'nav-text',
         action: () => accountService.logout(),
-        visible: shouldVisible(['admin', ' influencer', 'advertiser']),
+        visible: shouldVisible(['admin', 'influencer', 'advertiser']),
     },
 ];

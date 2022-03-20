@@ -3,8 +3,9 @@ import config from 'config';
 import { fetchWrapper, history, storageHandler } from '@/_helpers';
 import { Role } from '../_helpers/role';
 
+
 const userSubject = new BehaviorSubject(null);
-const baseUrl = `${process.env.REACT_APP_API_URL}/user`;
+const baseUrl = `${process.env.REACT_APP_API_URL}/users`;
 
 export const accountService = {
     login,
@@ -25,7 +26,7 @@ export const accountService = {
 };
 
 function login(email, password) {
-    return fetchWrapper.post(`${baseUrl}/login`, { email, password })
+    return fetchWrapper.post(`${process.env.REACT_APP_API_URL}/login`, { email, password })
         .then(user => {
 
             //TODO: need to remove this code once we assign role to one user
@@ -47,7 +48,7 @@ function login(email, password) {
 
 function logout() {
     // revoke token, stop refresh timer, publish null to user subscribers and redirect to login page
-    fetchWrapper.post(`${baseUrl}/logout`, {});
+    fetchWrapper.post(`${process.env.REACT_APP_API_URL}/logout`, {});
     stopRefreshTokenTimer();
     storageHandler.deleteToken();
     userSubject.next(null);
@@ -55,7 +56,7 @@ function logout() {
 }
 
 function refreshToken() {
-    return fetchWrapper.post(`${baseUrl}/refresh-token`, {})
+    return fetchWrapper.post(`${process.env.REACT_APP_API_URL}/refresh-token`, {})
         .then(user => {
             //TODO: need to remove this code once we assign role to one user
             if (user.data.roles.length === 0) {
@@ -76,7 +77,7 @@ function refreshToken() {
 }
 
 function register(params) {
-    return fetchWrapper.post(`${baseUrl}/register`, params);
+    return fetchWrapper.post(`${process.env.REACT_APP_API_URL}/register`, params);
 }
 
 function verifyEmail(token) {
@@ -95,8 +96,36 @@ function resetPassword({ token, password, confirmPassword }) {
     return fetchWrapper.post(`${baseUrl}/reset-password`, { token, password, confirmPassword });
 }
 
-function getAll() {
-    return fetchWrapper.get(baseUrl);
+function getAll(options) {
+    let filterString = "";
+    if (options.filter) {
+        filterString = getAllFilters(options, filterString);
+    }
+    if (options.page !== undefined) {
+       filterString = getAllPaging(options, filterString) 
+    }
+    const url = filterString.length > 0 ? `${baseUrl}?${filterString}` : `${baseUrl}`;
+    return fetchWrapper.get(url);
+}
+
+function getAllFilters(options, filterString) {
+    if (Object.keys(options.filter).length > 0) {
+        filterString = `filter[${options.filter.property}]=${options.filter.value}`
+    }
+    if (Object.keys(options.sort).length > 0) {
+        filterString += filterString.length > 0 ? `&` : '';
+        filterString += `sort = ${options.sort.value}${options.sort.property}`;
+    }
+}
+
+function getAllPaging(options, filterString) {
+    filterString += filterString.length > 0 ? `&` : '';
+    filterString += `page[number]=${options.page}`;
+    if (options.pageSize) {
+        filterString += filterString.length > 0 ? `&` : '';
+        filterString += `page[size]=${options.pageSize}`;
+    }
+    return filterString
 }
 
 function getById(id) {

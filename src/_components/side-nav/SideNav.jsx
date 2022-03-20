@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import * as FaIcons from 'react-icons/fa';
 import * as AiIcons from 'react-icons/ai';
@@ -8,9 +9,9 @@ import { Role } from '@/_helpers';
 import { accountService } from '@/_services';
 import './navbar.less';
 
-const SideNav = () => {
+const SideNav = (props) => {
     const [sidebar, setSidebar] = useState(false);
-    const [user, setUser] = useState({});
+    const [user, setUser] = useState(props.user);
 
     useEffect(() => {
         const subscription = accountService.user.subscribe(x => setUser(x));
@@ -22,7 +23,6 @@ const SideNav = () => {
 
     // only show nav when logged in
     if (!user) return null;
-
 
     return (
         <>
@@ -61,7 +61,7 @@ const SideNav = () => {
 };
 
 SideNav.propTypes = {
-
+    user: PropTypes.object,
 };
 
 export {SideNav};

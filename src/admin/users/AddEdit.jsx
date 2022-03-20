@@ -81,8 +81,9 @@ function AddEdit({ history, match }) {
                     if (!isAddMode) {
                         // get user and set form fields
                         accountService.getById(id).then(user => {
+                            const newUser = Object.assign({}, { ...user.data, title:'Mr', role: user.data.roles[0].name });
                             const fields = ['title', 'firstName', 'lastName', 'email', 'role'];
-                            fields.forEach(field => setFieldValue(field, user[field], false));
+                            fields.forEach(field => setFieldValue(field, newUser[field], false));
                         });
                     }
                 }, []);
@@ -123,8 +124,9 @@ function AddEdit({ history, match }) {
                                 <label>Role</label>
                                 <Field name="role" as="select" className={'form-control' + (errors.role && touched.role ? ' is-invalid' : '')}>
                                     <option value=""></option>
-                                    <option value="User">User</option>
-                                    <option value="Admin">Admin</option>
+                                    <option value="influencer">Influencer</option>
+                                    <option value="advertiser">Advertiser</option>
+                                    <option value="admin">Admin</option>
                                 </Field>
                                 <ErrorMessage name="role" component="div" className="invalid-feedback" />
                             </div>
