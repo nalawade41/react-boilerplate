@@ -19,7 +19,7 @@ import { styled } from '@mui/material/styles';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 10;
 
 const useQuery = (page, pageSize, rowCountState) => {
     const [rowCount, setRowCount] = React.useState(undefined);
