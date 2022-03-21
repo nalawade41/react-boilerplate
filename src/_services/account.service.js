@@ -1,5 +1,4 @@
 import { BehaviorSubject } from 'rxjs';
-import config from 'config';
 import { fetchWrapper, history, storageHandler } from '@/_helpers';
 import { Role } from '../_helpers/role';
 

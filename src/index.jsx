@@ -4,6 +4,8 @@ import { render } from 'react-dom';
 import { history } from './_helpers';
 import { accountService } from './_services';
 import { App } from './app';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
 import './styles.less';
 
@@ -13,7 +15,9 @@ accountService.refreshToken().finally(startApp);
 function startApp() { 
     render(
         <Router history={history}>
-            <App />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <App />
+            </LocalizationProvider>
         </Router>,
         document.getElementById('app')
     );

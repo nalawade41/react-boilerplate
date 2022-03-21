@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Box } from "@mui/system";
-import { accountService } from '@/_services';
+import { proposalService } from '@/_services';
 import {
     DataGrid,
     gridPageCountSelector,
@@ -9,15 +9,16 @@ import {
     useGridApiContext,
     useGridSelector,
 } from '@mui/x-data-grid';
-import { Pagination, PaginationItem, Button, Avatar } from '@mui/material';
-import { deepPurple } from '@mui/material/colors';
+import { Pagination, PaginationItem, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle }from '@mui/material';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import { styled } from '@mui/material/styles';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
+import PreviewIcon from '@mui/icons-material/Preview';
 
 const PAGE_SIZE = 2;
 
@@ -31,7 +32,7 @@ const useQuery = (page, pageSize, rowCountState) => {
 
         setIsLoading(true);
         setRowCount(undefined);
-        accountService.getAll({ page: page + 1, pageSize }).then((res) => {
+        proposalService.getAll({ page: page + 1, pageSize }).then((res) => {
             if (!active) {
                 return;
             }
@@ -151,73 +152,93 @@ const CustomPagination = () => {
 
 function List({ match }) {
     const { path } = match;
-    const [rowsState, setRowsState] = React.useState({
+    const [rowsState, setRowsState] = useState({
         page: 0,
         pageSize: PAGE_SIZE,
     });
-    const [rowCountState, setRowCountState] = React.useState(0);
+    const [rowCountState, setRowCountState] = useState(0);
     const { isLoading, data, rowCount } = useQuery(
         rowsState.page,
         rowsState.pageSize,
         rowCountState
     );
-    const [selectionModel, setSelectionModel] = React.useState([]);
+    const [selectionModel, setSelectionModel] = useState([]);
+    const [open, setOpen] = useState(false);
+    const [deleteID, setDeleteID] = useState(undefined);
+
+    const showDeleteConfirmation = (id) => {
+        setDeleteID(id);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setDeleteID(undefined);
+    };
+
+
     useEffect(() => {
         setRowCountState((prevRowCountState) =>
             rowCount !== undefined ? rowCount : prevRowCountState,
         );
     }, [rowCount, setRowCountState]);
 
-    const onDelete = (id) => {
-        accountService.delete(id).then(() => {
-            setRowCountState(rowCount - 1);
-        });
-    };
-
-    const getRoles = (params) => {
-        return params.row.roles.map(obj => obj.name).join(',');
-    };
-
-    const getFullName = (params) => {
-        return `${params.row.firstName || ''} ${params.row.lastName || ''}`;
+    const onDelete = () => {
+        if (deleteID) {
+            proposalService.delete(deleteID).then(() => {
+                setRowCountState(rowCount - 1);
+                handleClose();
+            });
+        }
     };
 
     const columns = [
+        { field: 'title', headerName: 'Title', flex: 1, align: 'center', headerAlign: 'center'},
+        { field: 'description', headerName: 'Description', flex: 1 },
         {
-            field: 'name',
-            headerName: 'Name',
-            valueGetter: getFullName,
-            flex: 1,
-            align: 'left',
+            field: 'start_date',
+            headerName: 'Start Date',
+        },
+        {
+            field: 'end_date',
+            headerName: 'End Date',
+        },
+        {
+            field: 'min_budget',
+            headerName: 'Min Budget',
+        },
+        {
+            field: 'max_budget',
+            headerName: 'Max Budget',
+        },
+        {
+            field: 'status',
+            headerName: 'Status',
             renderCell: (params) => (
-                <div>
-                    <Avatar
-                        alt="Remy Sharp"
-                        src="/broken-image.jpg"
-                        sx={{ width: 24, height: 24, float: 'left', bgcolor: deepPurple[500] }}
-                    >
-                        {params.value.substring(0,1)}
-                    </Avatar>
-                    <p>&nbsp;{params.value}</p>
-                </div>
+                <strong>
+                    <FiberManualRecordIcon
+                        fontSize="small"
+                        sx={{
+                            mr: 1,
+                            color: params.value === 'active' ? '#4caf50' : '#d9182e',
+                        }}
+                    />
+                    {params.value === 'active' ? 'Active' : 'In-Active'}
+                </strong>
             ),
         },
-        { field: 'email', headerName: 'Email', flex: 1 },
         {
-            field: 'roles',
-            headerName: 'Role',
-            valueGetter: getRoles,
-            flex: 1,
-        },
-        { 
             field: 'edit-delete',
             headerName: '',
             flex: 0.5,
             renderCell: (params) => (
                 <strong>
-                    <DeleteForeverIcon color="error" onClick={() => onDelete(params.row.id)} fontSize="large" />
-                    <Link to={`${path}/edit/${params.row.id}`}className="mr-1">
-                        <EditIcon fontSize="large"/>
+                    <DeleteForeverIcon color="error" onClick={() => showDeleteConfirmation(params.row.id)} fontSize="large" />
+                    <Link to={`${path}/edit/${params.row.id}`}  className="mr-1">
+                        <EditIcon fontSize="large" />
+                    </Link>
+                    <Link to={`${path}/view/${params.row.id}`} className="mr-1">
+                        <PreviewIcon color="primary" onClick={() => { }} fontSize="large" />
                     </Link>
                 </strong>
             ),
@@ -230,8 +251,8 @@ function List({ match }) {
 
     return (
         <div>
-            <h1>Manage Users</h1>
-            <Link to={`${path}/add`} className="btn btn-success mb-2">Add User</Link>
+            <h1>Manage Proposals</h1>
+            <Link to={`${path}/add`} className="btn btn-sm btn-success mb-2">Add Proposal</Link>
             <Box display="flex" height="100vh" width="100%">
                 <div style={{ flexGrow: 1 }}>
                     <DataGrid
@@ -257,6 +278,27 @@ function List({ match }) {
                         autoHeight />
                 </div>
             </Box>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {"Do you want to delete this proposal?"}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        This will delete selected proposal from the system.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={onDelete} color="error"  autoFocus >
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

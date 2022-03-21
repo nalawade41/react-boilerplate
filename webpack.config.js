@@ -34,6 +34,7 @@ module.exports = {
     devServer: {
         historyApiFallback: true
     },
+    devtool: 'eval-cheap-module-source-map',
     externals: {
         // global app config object
         config: JSON.stringify({

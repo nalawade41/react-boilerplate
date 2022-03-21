@@ -34,18 +34,18 @@ export const SidebarData = [
     },
     {
         title: 'Proposal',
-        path: '/proposal',
-        icon: <CgIcons.CgProductHunt />,
-        class: 'nav-text',
-        visible: shouldVisible(['admin', 'influencer', 'advertiser']),
-    },
-    {
-        title: 'Campaign',
-        path: '/campaign',
+        path: '/advertiser/proposals',
         icon: <MdIcons.MdOutlineCampaign />,
         class: 'nav-text',
         visible: shouldVisible(['admin', 'influencer', 'advertiser']),
     },
+    // {
+    //     title: 'Campaign',
+    //     path: '/advertiser/campaign',
+    //     icon: <MdIcons.MdOutlineCampaign />,
+    //     class: 'nav-text',
+    //     visible: shouldVisible(['admin', 'influencer', 'advertiser']),
+    // },
     {
         title: 'Admin',
         path: '/admin/users',

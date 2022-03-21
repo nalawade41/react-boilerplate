@@ -1,4 +1,3 @@
-import config from 'config';
 import { accountService } from '@/_services';
 import { storageHandler } from './storage';
 export const fetchWrapper = {
@@ -29,7 +28,7 @@ function post(url, body) {
 function put(url, body) {
     const requestOptions = {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...authHeader(url) },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...authHeader(url) },
         body: JSON.stringify(body)
     };
     return fetch(url, requestOptions).then(handleResponse);    

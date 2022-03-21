@@ -8,10 +8,10 @@ import { accountService, alertService } from '@/_services';
 function Update({ history }) {
     const user = accountService.userValue;
     const initialValues = {
-        title: user.title,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
+        title: user.data.title,
+        firstName: user.data.firstName,
+        lastName: user.data.lastName,
+        email: user.data.email,
         password: '',
         confirmPassword: ''
     };
@@ -37,7 +37,7 @@ function Update({ history }) {
 
     function onSubmit(fields, { setStatus, setSubmitting }) {
         setStatus();
-        accountService.update(user.id, fields)
+        accountService.update(user.data.id, fields)
             .then(() => {
                 alertService.success('Update successful', { keepAfterRouteChange: true });
                 history.push('.');
@@ -52,8 +52,11 @@ function Update({ history }) {
     function onDelete() {
         if (confirm('Are you sure?')) {
             setIsDeleting(true);
-            accountService.delete(user.id)
-                .then(() => alertService.success('Account deleted successfully'));
+            accountService.delete(user.data.id)
+                .then(() => {
+                    alertService.success('Account deleted successfully');
+                    history.push('/');
+                });
         }
     }
 
