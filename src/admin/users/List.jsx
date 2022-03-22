@@ -9,7 +9,7 @@ import {
     useGridApiContext,
     useGridSelector,
 } from '@mui/x-data-grid';
-import { Pagination, PaginationItem, Button, Avatar } from '@mui/material';
+import { Pagination, PaginationItem, Button, Avatar, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { deepPurple } from '@mui/material/colors';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -18,10 +18,11 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import { styled } from '@mui/material/styles';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
+import { UserModel } from './UserModel';
 
 const PAGE_SIZE = 10;
 
-const useQuery = (page, pageSize, rowCountState) => {
+const useQuery = (page, pageSize, rowCountState, filter) => {
     const [rowCount, setRowCount] = React.useState(undefined);
     const [isLoading, setIsLoading] = React.useState(false);
     const [data, setData] = React.useState([]);
@@ -31,7 +32,7 @@ const useQuery = (page, pageSize, rowCountState) => {
 
         setIsLoading(true);
         setRowCount(undefined);
-        accountService.getAll({ page: page + 1, pageSize }).then((res) => {
+        accountService.getAll({ page: page + 1, pageSize, filter }).then((res) => {
             if (!active) {
                 return;
             }
@@ -43,7 +44,7 @@ const useQuery = (page, pageSize, rowCountState) => {
         return () => {
             active = false;
         };
-    }, [page, pageSize, rowCountState]);
+    }, [page, pageSize, rowCountState, filter]);
 
     return { isLoading, data, rowCount };
 };
@@ -148,30 +149,84 @@ const CustomPagination = () => {
 };
 
 
+const Filter = ({ handleSearchClick, filterColumns }) => {
+    const [searchType, setSearchType] = useState('firstName');
+
+    const handleChangeSearchType = (e) => setSearchType(e.target.value);
+
+    const renderFilterOptions = () => {
+        return filterColumns.map((obj, index) => {
+            if (obj.filterAble) {
+                return (
+                    <option value={obj.columnName} key={index}>{obj.headerName}</option>
+                );
+            }
+        })
+    };
+
+    const renderFilters = () => {
+        return filterColumns.map((obj, index) => {
+            if (obj.columnName === searchType) {
+                return obj.filterComponent({ value: '', handleSearchClick, key: index });
+            }
+        });
+    };
+
+    return (
+        <div className="row position-relative p-2">
+            <div className="col-2">
+                <select className="form-control" value={searchType} onChange={handleChangeSearchType}>
+                    {renderFilterOptions()}
+                </select>
+            </div>
+            {renderFilters()}
+        </div>
+    );
+}
 
 function List({ match }) {
     const { path } = match;
-    const [rowsState, setRowsState] = React.useState({
+    const [filter, setFilter] = useState('');
+    const [rowsState, setRowsState] = useState({
         page: 0,
         pageSize: PAGE_SIZE,
     });
-    const [rowCountState, setRowCountState] = React.useState(0);
+    const [rowCountState, setRowCountState] = useState(0);
     const { isLoading, data, rowCount } = useQuery(
         rowsState.page,
         rowsState.pageSize,
-        rowCountState
+        rowCountState,
+        filter
     );
-    const [selectionModel, setSelectionModel] = React.useState([]);
+    const [open, setOpen] = useState(false);
+    const [deleteID, setDeleteID] = useState(undefined);
+    const [selectionModel, setSelectionModel] = useState([]);
     useEffect(() => {
         setRowCountState((prevRowCountState) =>
             rowCount !== undefined ? rowCount : prevRowCountState,
         );
     }, [rowCount, setRowCountState]);
 
-    const onDelete = (id) => {
-        accountService.delete(id).then(() => {
-            setRowCountState(rowCount - 1);
-        });
+    
+
+    const showDeleteConfirmation = (id) => {
+        setDeleteID(id);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setDeleteID(undefined);
+    };
+
+    const onDelete = () => {
+        if (deleteID) {
+            accountService.delete(id).then(() => {
+                setRowCountState(rowCount - 1);
+                handleClose();
+
+            });
+        }
     };
 
     const getRoles = (params) => {
@@ -193,7 +248,7 @@ function List({ match }) {
                 <div>
                     <Avatar
                         alt="Remy Sharp"
-                        src="/broken-image.jpg"
+                        src={params.row.photo}
                         sx={{ width: 24, height: 24, float: 'left', bgcolor: deepPurple[500] }}
                     >
                         {params.value.substring(0,1)}
@@ -228,10 +283,15 @@ function List({ match }) {
         return (<></>);
     }
 
+    const loadSearchFilter = (value) => {
+        setFilter(value);
+    };
+
     return (
         <div>
             <h1>Manage Users</h1>
             <Link to={`${path}/add`} className="btn btn-success mb-2">Add User</Link>
+            <Filter handleSearchClick={loadSearchFilter} filterColumns={UserModel} />
             <Box display="flex" height="100vh" width="100%">
                 <div style={{ flexGrow: 1 }}>
                     <DataGrid
@@ -257,6 +317,27 @@ function List({ match }) {
                         autoHeight />
                 </div>
             </Box>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {"Do you want to delete this proposal?"}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        This will delete selected user from the system.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={onDelete} color="error" autoFocus >
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

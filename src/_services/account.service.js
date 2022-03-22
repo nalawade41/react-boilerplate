@@ -98,7 +98,7 @@ function resetPassword({ token, password, confirmPassword }) {
 function getAll(options) {
     let filterString = "";
     if (options.filter) {
-        filterString = getAllFilters(options, filterString);
+        filterString = options.filter;
     }
     if (options.page !== undefined) {
        filterString = getAllPaging(options, filterString) 

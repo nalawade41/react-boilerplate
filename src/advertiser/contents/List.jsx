@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Box } from "@mui/system";
-import { proposalService } from '@/_services';
+import { contentService } from '@/_services';
 import {
     DataGrid,
     gridPageCountSelector,
@@ -19,7 +19,7 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import PreviewIcon from '@mui/icons-material/Preview';
-import { ProposalModel } from './ProposalModel';
+import { ContentModel } from './ContentModel';
 
 const PAGE_SIZE = 10;
 
@@ -33,7 +33,7 @@ const useQuery = (page, pageSize, rowCountState, filter) => {
 
         setIsLoading(true);
         setRowCount(undefined);
-        proposalService.getAll({ page: page + 1, pageSize, filter }).then((res) => {
+        contentService.getAll({ page: page + 1, pageSize, filter }).then((res) => {
             if (!active) {
                 return;
             }
@@ -158,8 +158,9 @@ const Filter = ({ handleSearchClick, filterColumns}) => {
     const renderFilterOptions = () => {
         return filterColumns.map((obj,index) => {
             if (obj.filterAble) {
+                debugger;
                 return (
-                    <option value={obj.columnName} key={index}>{obj.headerName}</option>
+                    <option key={index} value={obj.columnName}>{obj.headerName}</option>
                 );
             }
         })
@@ -223,7 +224,7 @@ function List({ match }) {
 
     const onDelete = () => {
         if (deleteID) {
-            proposalService.delete(deleteID).then(() => {
+            contentService.delete(deleteID).then(() => {
                 setRowCountState(rowCount - 1);
                 handleClose();
             });
@@ -231,27 +232,21 @@ function List({ match }) {
     };
 
     const columns = [
-        { field: 'title', headerName: 'Title', flex: 1, align: 'center', headerAlign: 'center'},
-        { field: 'description', headerName: 'Description', flex: 1 },
+        { field: 'title', headerName: 'Title', align: 'center', headerAlign: 'center', flex: 0.5},
+        { field: 'description', headerName: 'Description', flex: 1, headerAlign: 'center', },
         {
-            field: 'start_date',
-            headerName: 'Start Date',
-        },
-        {
-            field: 'end_date',
-            headerName: 'End Date',
-        },
-        {
-            field: 'min_budget',
-            headerName: 'Min Budget',
-        },
-        {
-            field: 'max_budget',
-            headerName: 'Max Budget',
+            field: 'media_type',
+            headerName: 'Media Type',
+            align: 'center',
+            headerAlign: 'center',
+            flex: 0.5,
         },
         {
             field: 'status',
             headerName: 'Status',
+            flex: 0.7,
+            align: 'center',
+            headerAlign: 'center',
             renderCell: (params) => (
                 <strong>
                     <FiberManualRecordIcon
@@ -268,7 +263,8 @@ function List({ match }) {
         {
             field: 'edit-delete',
             headerName: '',
-            flex: 0.5,
+            flex: 0.8,
+            align: 'center',
             renderCell: (params) => (
                 <strong>
                     <DeleteForeverIcon color="error" onClick={() => showDeleteConfirmation(params.row.id)} fontSize="large" />
@@ -290,12 +286,12 @@ function List({ match }) {
     const loadSearchFilter = (value) => {
         setFilter(value);
     };
-    debugger;
+
     return (
         <div>
-            <h1>Manage Proposals</h1>
-            <Link to={`${path}/add`} className="btn btn-sm btn-success mb-2">Add Proposal</Link>
-            <Filter handleSearchClick={loadSearchFilter} filterColumns={ProposalModel}/>
+            <h1>Manage Content</h1>
+            <Link to={`${path}/add`} className="btn btn-sm btn-success mb-2">Add Content</Link>
+            <Filter handleSearchClick={loadSearchFilter} filterColumns={ContentModel}/>
             <Box display="flex" height="100vh" width="100%">
                 <div style={{ flexGrow: 1 }}>
                     <DataGrid
@@ -332,7 +328,7 @@ function List({ match }) {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        This will delete selected proposal from the system.
+                        This will delete selected content from the system.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

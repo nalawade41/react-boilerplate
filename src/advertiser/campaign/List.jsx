@@ -18,10 +18,11 @@ import { styled } from '@mui/material/styles';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
+import { CampaignModel } from './CampaignModel';
 
 const PAGE_SIZE = 10;
 
-const useQuery = (page, pageSize, rowCountState) => {
+const useQuery = (page, pageSize, rowCountState, filter, proposalID) => {
     const [rowCount, setRowCount] = React.useState(undefined);
     const [isLoading, setIsLoading] = React.useState(false);
     const [data, setData] = React.useState([]);
@@ -31,7 +32,7 @@ const useQuery = (page, pageSize, rowCountState) => {
 
         setIsLoading(true);
         setRowCount(undefined);
-        campaignService.getAll({ page: page + 1, pageSize }).then((res) => {
+        campaignService.getByProposalId({ page: page + 1, pageSize, filter }, proposalID).then((res) => {
             if (!active) {
                 return;
             }
@@ -43,7 +44,7 @@ const useQuery = (page, pageSize, rowCountState) => {
         return () => {
             active = false;
         };
-    }, [page, pageSize, rowCountState]);
+    }, [page, pageSize, rowCountState, filter, proposalID]);
 
     return { isLoading, data, rowCount };
 };
@@ -147,11 +148,51 @@ const CustomPagination = () => {
     );
 };
 
+const Filter = ({ handleSearchClick, filterColumns }) => {
+    const [searchType, setSearchType] = useState('title');
+
+    const handleChangeSearchType = (e) => setSearchType(e.target.value);
+
+    const renderFilterOptions = () => {
+        return filterColumns.map((obj, index) => {
+            if (obj.filterAble) {
+                return (
+                    <option value={obj.columnName} key={index}>{obj.headerName}</option>
+                );
+            }
+        })
+    };
+
+    const renderFilters = () => {
+        return filterColumns.map((obj, index) => {
+            if (obj.columnName === searchType) {
+                return obj.filterComponent({ value: '', handleSearchClick, key: index });
+            }
+        });
+    };
+
+    return (
+        <div className="row position-relative p-2">
+            <div className="col-2">
+                <select className="form-control" value={searchType} onChange={handleChangeSearchType}>
+                    {renderFilterOptions()}
+                </select>
+            </div>
+            {renderFilters()}
+        </div>
+    );
+}
 
 
 function List({ match, history }) {
-    debugger;
-    const { path } = match;
+    const {
+        path,
+        params: {
+            id: proposalID,
+        },
+    } = match;
+
+    const [filter, setFilter] = useState('');
     const [rowsState, setRowsState] = useState({
         page: 0,
         pageSize: PAGE_SIZE,
@@ -160,7 +201,9 @@ function List({ match, history }) {
     const { isLoading, data, rowCount } = useQuery(
         rowsState.page,
         rowsState.pageSize,
-        rowCountState
+        rowCountState,
+        filter,
+        proposalID
     );
     const [selectionModel, setSelectionModel] = useState([]);
     const [open, setOpen] = useState(false);
@@ -242,10 +285,15 @@ function List({ match, history }) {
         return (<></>);
     }
 
+    const loadSearchFilter = (value) => {
+        setFilter(value);
+    };
+
     return (
         <div>
             <h1>Manage Campaign</h1>
-            <Link to={`/advertiser/campaign/add`} className="btn btn-sm btn-success mb-2">Add Campaign</Link>
+            <Link to={{ pathname: `/advertiser/campaign/add`, query: { proposalID: proposalID } }} className="btn btn-sm btn-success mb-2">Add Campaign</Link>
+            <Filter handleSearchClick={loadSearchFilter} filterColumns={CampaignModel} />
             <Box display="flex" height="100vh" width="100%">
                 <div style={{ flexGrow: 1 }}>
                     <DataGrid
@@ -282,7 +330,7 @@ function List({ match, history }) {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        This will delete selected proposal from the system.
+                        This will delete selected Campaign from the system.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

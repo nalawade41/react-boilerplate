@@ -4,6 +4,7 @@ import { accountService } from '@/_services';
 import { Proposal } from './proposals';
 import { Overview } from './Overview';
 import { Campaign } from './campaign';
+import { Content } from './contents';
 
 const Advertiser = ({match}) => {
     const user = accountService.userValue;
@@ -20,6 +21,7 @@ const Advertiser = ({match}) => {
                     <Route exact path={path} component={Overview} />
                     <Route path={`${path}/proposals`} component={Proposal} />
                     <Route path={`${path}/campaign`} component={Campaign} />
+                    <Route path={`${path}/contents`} component={Content} />
                 </Switch>
             </div>
         </div>

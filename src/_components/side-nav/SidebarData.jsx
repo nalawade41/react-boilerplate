@@ -37,15 +37,15 @@ export const SidebarData = [
         path: '/advertiser/proposals',
         icon: <MdIcons.MdOutlineCampaign />,
         class: 'nav-text',
-        visible: shouldVisible(['admin', 'influencer', 'advertiser']),
+        visible: shouldVisible(['admin', 'advertiser']),
     },
-    // {
-    //     title: 'Campaign',
-    //     path: '/advertiser/campaign',
-    //     icon: <MdIcons.MdOutlineCampaign />,
-    //     class: 'nav-text',
-    //     visible: shouldVisible(['admin', 'influencer', 'advertiser']),
-    // },
+    {
+        title: 'Content',
+        path: '/advertiser/contents',
+        icon: <MdIcons.MdPermMedia />, 
+        class: 'nav-text',
+        visible: shouldVisible(['admin', 'advertiser']),
+    },
     {
         title: 'Admin',
         path: '/admin/users',

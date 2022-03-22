@@ -8,6 +8,13 @@ import DatePicker from "react-datepicker";
 import { campaignService, alertService } from '@/_services';
 
 function AddEdit({ history, match }) {
+    const {
+        location: {
+            query: {
+                proposalID: parentID,
+            }
+        },
+    } = history;
     const { id } = match.params;
     const isAddMode = !id;
     const initialValues = {
@@ -53,21 +60,22 @@ function AddEdit({ history, match }) {
     function onSubmit(fields, { setStatus, setSubmitting }) {
         setStatus();
         if (isAddMode) {
-            createProposal(fields, setSubmitting);
+            createCampaign(fields, setSubmitting);
         } else {
-            updateProposal(id, fields, setSubmitting);
+            updateCampaign(id, fields, setSubmitting);
         }
     }
 
-    function createProposal(fields, setSubmitting) {
+    function createCampaign(fields, setSubmitting) {
         const data = Object.assign({}, {
             ...fields,
             start_date: format(fields.start_date, 'yyyy-MM-dd'),
             end_date: format(fields.end_date, 'yyyy-MM-dd'),
+            proposal_id: parentID,
         });
         campaignService.create(data)
             .then(() => {
-                alertService.success('User added successfully', { keepAfterRouteChange: true });
+                alertService.success('Campaign added successfully', { keepAfterRouteChange: true });
                 history.goBack();
             })
             .catch(error => {
@@ -76,7 +84,7 @@ function AddEdit({ history, match }) {
             });
     }
 
-    function updateProposal(id, fields, setSubmitting) {
+    function updateCampaign(id, fields, setSubmitting) {
         campaignService.update(id, fields)
             .then(() => {
                 alertService.success('Update successful', { keepAfterRouteChange: true });
@@ -103,7 +111,7 @@ function AddEdit({ history, match }) {
 
                 return (
                     <Form>
-                        <h1>{isAddMode ? 'Add Proposal' : 'Edit Proposal'}</h1>
+                        <h1>{isAddMode ? 'Add Campaign' : 'Edit Campaign'}</h1>
                         <div className="form-row">
                             <div className="form-group col-6">
                                 <label>Title</label>

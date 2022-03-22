@@ -9,18 +9,33 @@ export const campaignService = {
     getById,
     create,
     update,
+    getByProposalId,
     delete: _delete,
 };
 
 function getAll(options) {
     let filterString = "";
     if (options.filter) {
-        filterString = getAllFilters(options, filterString);
+        filterString = options.filter;
     }
     if (options.page !== undefined) {
         filterString = getAllPaging(options, filterString)
     }
     const url = filterString.length > 0 ? `${baseUrl}?${filterString}` : `${baseUrl}`;
+    return fetchWrapper.get(url);
+}
+
+function getByProposalId(options, id) {
+    let filterString = "";
+    if (options.filter) {
+        filterString = options.filter;
+    }
+    if (options.page !== undefined) {
+        filterString = getAllPaging(options, filterString)
+    }
+    const apiURL = `${ process.env.REACT_APP_API_URL }/campaignByProposalId/${ id }`;
+    const url = filterString.length > 0 ? `${apiURL}?${filterString}` : `${apiURL}`;
+
     return fetchWrapper.get(url);
 }
 

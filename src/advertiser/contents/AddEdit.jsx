@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import DatePicker from "react-datepicker";
 
 
-import { proposalService, alertService } from '@/_services';
+import { contentService, alertService } from '@/_services';
 
 function AddEdit({ history, match }) {
     const { id } = match.params;
@@ -56,21 +56,21 @@ function AddEdit({ history, match }) {
     function onSubmit(fields, { setStatus, setSubmitting }) {
         setStatus();
         if (isAddMode) {
-            createProposal(fields, setSubmitting);
+            createContent(fields, setSubmitting);
         } else {
-            updateProposal(id, fields, setSubmitting);
+            updateContent(id, fields, setSubmitting);
         }
     }
 
-    function createProposal(fields, setSubmitting) {
+    function createContent(fields, setSubmitting) {
         const data = Object.assign({}, {
             ...fields,
             start_date: format(fields.start_date, 'yyyy-MM-dd'),
             end_date: format(fields.end_date, 'yyyy-MM-dd'),
         });
-        proposalService.create(data)
+        contentService.create(data)
             .then(() => {
-                alertService.success('Proposal added successfully', { keepAfterRouteChange: true });
+                alertService.success('Content added successfully', { keepAfterRouteChange: true });
                 history.push('.');
             })
             .catch(error => {
@@ -79,8 +79,8 @@ function AddEdit({ history, match }) {
             });
     }
 
-    function updateProposal(id, fields, setSubmitting) {
-        proposalService.update(id, fields)
+    function updateContent(id, fields, setSubmitting) {
+        contentService.update(id, fields)
             .then(() => {
                 alertService.success('Update successful', { keepAfterRouteChange: true });
                 history.push('..');
@@ -97,16 +97,16 @@ function AddEdit({ history, match }) {
                 useEffect(() => {
                     if (!isAddMode) {
                         // get user and set form fields
-                        proposalService.getById(id).then(proposal => {
+                        contentService.getById(id).then(content => {
                             const fields = ['title', 'description', 'start_date', 'end_date', 'min_budget', 'max_budget', 'status'];
-                            fields.forEach(field => setFieldValue(field, proposal.data[field], false));
+                            fields.forEach(field => setFieldValue(field, content.data[field], false));
                         });
                     }
                 }, []);
 
                 return (
                     <Form>
-                        <h1>{isAddMode ? 'Add Proposal' : 'Edit Proposal'}</h1>
+                        <h1>{isAddMode ? 'Add Content' : 'Edit Content'}</h1>
                         <div className="form-row">
                             <div className="form-group col-6">
                                 <label>Title</label>

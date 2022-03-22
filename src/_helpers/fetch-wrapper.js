@@ -1,9 +1,12 @@
 import { accountService } from '@/_services';
 import { storageHandler } from './storage';
+import { http } from './http-common';
+
 export const fetchWrapper = {
     get,
     post,
     put,
+    postFile,
     delete: _delete
 }
 
@@ -23,6 +26,14 @@ function post(url, body) {
         body: JSON.stringify(body)
     };
     return fetch(url, requestOptions).then(handleResponse);
+}
+
+function postFile(url, formData, onUploadProgress) {
+    return http.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data', 'Accept': 'application/json', ...authHeader(url) },
+        credentials: 'include',
+        onUploadProgress,
+    }).then(handleAxiosResponse);
 }
 
 function put(url, body) {
@@ -76,4 +87,16 @@ function handleResponse(response) {
 
         return data;
     });
+}
+
+function handleAxiosResponse(response) {
+    if (response.status !== 200) {
+        if ([401, 403].includes(response.status) && accountService.userValue) {
+            // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
+            accountService.logout();
+        }
+        const error = (data && data.message) || response.statusText;
+        return Promise.reject(error);
+    }
+    return response.data;
 }

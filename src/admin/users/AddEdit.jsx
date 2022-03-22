@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
 import { accountService, alertService } from '@/_services';
+import { UploadImages } from '@/_components';
 
 function AddEdit({ history, match }) {
     const { id } = match.params;
     const isAddMode = !id;
-    
+    const [imageFile, setImageFile] = useState('');
+    const [disableSave, setDisableSave] = useState(false);
     const initialValues = {
         title: '',
         firstName: '',
@@ -16,7 +18,8 @@ function AddEdit({ history, match }) {
         email: '',
         role: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        photo:'',
     };
 
     const validationSchema = Yup.object().shape({
@@ -51,7 +54,7 @@ function AddEdit({ history, match }) {
     }
 
     function createUser(fields, setSubmitting) {
-        accountService.create(fields)
+        accountService.create({ ...fields, photo: imageFile })
             .then(() => {
                 alertService.success('User added successfully', { keepAfterRouteChange: true });
                 history.push('.');
@@ -63,7 +66,7 @@ function AddEdit({ history, match }) {
     }
 
     function updateUser(id, fields, setSubmitting) {
-        accountService.update(id, fields)
+        accountService.update(id, { ...fields, photo: imageFile })
             .then(() => {
                 alertService.success('Update successful', { keepAfterRouteChange: true });
                 history.push('..');
@@ -74,20 +77,28 @@ function AddEdit({ history, match }) {
             });
     }
 
+    const handleImageUpload = (fileLink) => {
+        setImageFile(fileLink);
+        setDisableSave(false);
+    };
+
+    const handleImageSelect = (imageSelectd) => {
+        setDisableSave(imageSelectd);
+    };
+
     return (
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
-            {({ errors, touched, isSubmitting, setFieldValue }) => {
+            {({ errors, touched, isSubmitting, setFieldValue, values }) => {
                 useEffect(() => {
                     if (!isAddMode) {
                         // get user and set form fields
                         accountService.getById(id).then(user => {
                             const newUser = Object.assign({}, { ...user.data, title:'Mr', role: user.data.roles[0].name });
-                            const fields = ['title', 'firstName', 'lastName', 'email', 'role'];
+                            const fields = ['title', 'firstName', 'lastName', 'email', 'role', 'photo'];
                             fields.forEach(field => setFieldValue(field, newUser[field], false));
                         });
                     }
                 }, []);
-
                 return (
                     <Form>
                         <h1>{isAddMode ? 'Add User' : 'Edit User'}</h1>
@@ -149,8 +160,10 @@ function AddEdit({ history, match }) {
                                 <ErrorMessage name="confirmPassword" component="div" className="invalid-feedback" />
                             </div>
                         </div>
+                        <UploadImages handleImageUpload={handleImageUpload} handleImageSelect={handleImageSelect} previewLink={(values && values.photo) || imageFile}/>
+                        <br/>
                         <div className="form-group">
-                            <button type="submit" disabled={isSubmitting} className="btn btn-primary">
+                            <button type="submit" disabled={isSubmitting || disableSave} className="btn btn-primary">
                                 {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
                                 Save
                             </button>

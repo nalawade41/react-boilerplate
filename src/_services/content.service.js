@@ -2,9 +2,9 @@ import { BehaviorSubject } from 'rxjs';
 import config from 'config';
 import { fetchWrapper, history, storageHandler } from '@/_helpers';
 
-const baseUrl = `${process.env.REACT_APP_API_URL}/proposals`;
+const baseUrl = `${process.env.REACT_APP_API_URL}/contentlib`;
 
-export const proposalService = {
+export const contentService = {
     getAll,
     getById,
     create,

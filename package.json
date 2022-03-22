@@ -20,6 +20,7 @@
         "@mui/x-data-grid": "^5.6.1",
         "@mui/x-data-grid-generator": "^5.6.1",
         "add": "^2.0.6",
+        "axios": "^0.26.1",
         "date-fns": "^2.28.0",
         "dotenv-webpack": "^7.1.0",
         "formik": "^2.1.4",
