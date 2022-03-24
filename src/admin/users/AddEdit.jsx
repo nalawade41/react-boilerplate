@@ -160,7 +160,7 @@ function AddEdit({ history, match }) {
                                 <ErrorMessage name="confirmPassword" component="div" className="invalid-feedback" />
                             </div>
                         </div>
-                        <UploadImages handleImageUpload={handleImageUpload} handleImageSelect={handleImageSelect} previewLink={(values && values.photo) || imageFile}/>
+                        <UploadImages handleImageUpload={handleImageUpload} handleImageSelect={handleImageSelect} previewLink={(values && values.photo) || imageFile} uploadType={"image/*"} previewType={ 2}/>
                         <br/>
                         <div className="form-group">
                             <button type="submit" disabled={isSubmitting || disableSave} className="btn btn-primary">

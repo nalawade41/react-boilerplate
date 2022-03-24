@@ -8,15 +8,13 @@ import DatePicker from "react-datepicker";
 import { campaignService, alertService } from '@/_services';
 
 function AddEdit({ history, match }) {
-    const {
-        location: {
-            query: {
-                proposalID: parentID,
-            }
-        },
-    } = history;
+    let parentID;
     const { id } = match.params;
     const isAddMode = !id;
+
+    if (isAddMode) {
+        parentID = history.location.query.proposalID;
+    }
     const initialValues = {
         title: '',
         description: '',

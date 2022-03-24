@@ -1,39 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns'
 import { Link } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, useFormikContext, useField } from 'formik';
 import * as Yup from 'yup';
 import DatePicker from "react-datepicker";
-
+import { UploadImages } from '@/_components';
 
 import { contentService, alertService } from '@/_services';
 
 function AddEdit({ history, match }) {
     const { id } = match.params;
     const isAddMode = !id;
+    const [imageFile, setImageFile] = useState('');
+    const [disableSave, setDisableSave] = useState(isAddMode ? true : false);
+    const [mediaType, setMediaType] = useState('');
+
     const initialValues = {
         title: '',
         description: '',
-        start_date: '',
-        end_date: '',
-        min_budget: '',
-        max_budget: '',
-        status: ''
-    };
-
-    const DatePickerField = ({ ...props }) => {
-        const { setFieldValue } = useFormikContext();
-        const [field] = useField(props);
-        return (
-            <DatePicker
-                {...field}
-                {...props}
-                selected={(field.value && new Date(field.value)) || null}
-                onChange={(val) => {
-                    setFieldValue(field.name, val);
-                }}
-            />
-        );
+        dimension: '320*250',
+        mediafile: '',
+        status: '',
+        media_type:'',
     };
 
     const validationSchema = Yup.object().shape({
@@ -41,14 +29,6 @@ function AddEdit({ history, match }) {
             .required('Title is required'),
         description: Yup.string()
             .required('Description is required'),
-        start_date: Yup.date()
-            .required('Start date is required'),
-        end_date: Yup.date()
-            .required('End date is required'),
-        min_budget: Yup.number()
-            .required('Min budget is required'),
-        max_budget: Yup.number()
-            .required('Max budget is required'),
         status: Yup.string()
             .required('Any one status selection is required'),
     });
@@ -65,9 +45,15 @@ function AddEdit({ history, match }) {
     function createContent(fields, setSubmitting) {
         const data = Object.assign({}, {
             ...fields,
-            start_date: format(fields.start_date, 'yyyy-MM-dd'),
-            end_date: format(fields.end_date, 'yyyy-MM-dd'),
+            media_type: mediaType,
+            mediafile: imageFile,
         });
+
+        if (!imageFile || !mediaType) {
+            alertService.error('Uplaod the content file');
+            return;
+        }
+
         contentService.create(data)
             .then(() => {
                 alertService.success('Content added successfully', { keepAfterRouteChange: true });
@@ -80,6 +66,17 @@ function AddEdit({ history, match }) {
     }
 
     function updateContent(id, fields, setSubmitting) {
+        const data = Object.assign({}, {
+            ...fields,
+            media_type: mediaType || fields.media_type,
+            mediafile: imageFile || fields.mediafile,
+        });
+
+        if (!data.media_type || !data.mediafile) {
+            alertService.error('Missing content file. Please re-upload.');
+            return;
+        }
+
         contentService.update(id, fields)
             .then(() => {
                 alertService.success('Update successful', { keepAfterRouteChange: true });
@@ -91,14 +88,24 @@ function AddEdit({ history, match }) {
             });
     }
 
+    const handleImageUpload = (fileLink, mediaType) => {
+        setImageFile(fileLink);
+        setDisableSave(false);
+        setMediaType(mediaType);
+    };
+
+    const handleImageSelect = (imageSelectd) => {
+        setDisableSave(imageSelectd);
+    };
+
     return (
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
-            {({ errors, touched, isSubmitting, setFieldValue }) => {
+            {({ errors, touched, isSubmitting, setFieldValue, values }) => {
                 useEffect(() => {
                     if (!isAddMode) {
                         // get user and set form fields
                         contentService.getById(id).then(content => {
-                            const fields = ['title', 'description', 'start_date', 'end_date', 'min_budget', 'max_budget', 'status'];
+                            const fields = ['title', 'description', 'dimension', 'mediafile', 'media_type', 'status'];
                             fields.forEach(field => setFieldValue(field, content.data[field], false));
                         });
                     }
@@ -121,24 +128,13 @@ function AddEdit({ history, match }) {
                         </div>
                         <div className="form-row">
                             <div className="form-group col-2">
-                                <label>Start Date</label>
-                                <DatePickerField name="start_date" type="text" className={'form-control' + (errors.start_date && touched.start_date ? ' is-invalid' : '')}/>
-                                <ErrorMessage name="start_date" component="div" className="invalid-feedback" />
-                            </div>
-                            <div className="form-group col-2">
-                                <label>End Date</label>
-                                <DatePickerField name="end_date" type="text" className={'form-control' + (errors.end_date && touched.end_date ? ' is-invalid' : '')} />
-                                <ErrorMessage name="end_date" component="div" className="invalid-feedback" />
-                            </div>
-                            <div className="form-group col-2">
-                                <label>Min Budget</label>
-                                <Field name="min_budget" type="text" className={'form-control' + (errors.min_budget && touched.min_budget ? ' is-invalid' : '')} />
-                                <ErrorMessage name="min_budget" component="div" className="invalid-feedback" />
-                            </div>
-                            <div className="form-group col-2">
-                                <label>Max Budget</label>
-                                <Field name="max_budget" type="text" className={'form-control' + (errors.max_budget && touched.max_budget ? ' is-invalid' : '')} />
-                                <ErrorMessage name="max_budget" component="div" className="invalid-feedback" />
+                                <label>Dimensions</label>
+                                <Field as="select" name="dimension" className={'form-control' + (errors.dimension && touched.dimension ? ' is-invalid' : '')}>
+                                    <option value="320*250">320 * 250</option>
+                                    <option value="160*600">160 * 600</option>
+                                    <option value="90*720">90 * 720</option>
+                                </Field>
+                                <ErrorMessage name="dimension" component="div" className="invalid-feedback" />
                             </div>
                             <div className="form-group col-2">
                                 <div className="form-row">
@@ -154,8 +150,9 @@ function AddEdit({ history, match }) {
                                 <ErrorMessage name="status" component="div" className="invalid-feedback" />
                             </div>
                         </div>
+                        <UploadImages handleImageUpload={handleImageUpload} handleImageSelect={handleImageSelect} previewLink={(values && values.mediafile) || imageFile} uploadType={"image/* video/*"} previewType={ values && values.media_type}/>
                         <div className="form-group">
-                            <button type="submit" disabled={isSubmitting} className="btn btn-primary">
+                            <button type="submit" disabled={isSubmitting || disableSave} className="btn btn-primary">
                                 {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
                                 Save
                             </button>

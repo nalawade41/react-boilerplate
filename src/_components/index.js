@@ -4,3 +4,4 @@ export * from './PrivateRoute';
 export * from './side-nav/SideNav';
 export * from './SearchBox';
 export * from './image-upload/ImageUplaoder';
+export * from './card/MediaCard';

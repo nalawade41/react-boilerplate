@@ -29,7 +29,7 @@ const UploadImages = (props) => {
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
-    const [imageInfos, setImageInfos] = useState([]);
+    const [mediaType, setMediaType] = useState(0);    
 
     useEffect(() => {
         //TODO: Do we stil need this ??
@@ -42,11 +42,18 @@ const UploadImages = (props) => {
 
     const selectFile = (e) => {
         if (e.target.files[0]) {
-            setCurrentFile(e.target.files[0]);
-            setPreviewImage(URL.createObjectURL(e.target.files[0]));
+            const file = e.target.files[0];
+            setCurrentFile(file);
+            setPreviewImage(URL.createObjectURL(file));
             setProgress(0);
             setMessage('');
             props.handleImageSelect(true);
+            if (file.type.startsWith("image")) { 
+                setMediaType(2);
+            }
+            if (file.type.startsWith("video")) { 
+                setMediaType(1);
+            }
         } else {
             props.handleImageSelect(false);
         }
@@ -60,15 +67,31 @@ const UploadImages = (props) => {
         }).then((response) => {
             setMessage(response.message);
             setIsError(false);
-            props.handleImageUpload(response.path);
+            props.handleImageUpload(response.path, mediaType);
         }).catch((err) => {
-            console.log(err);
             setCurrentFile(undefined);
             setPreviewImage(undefined);
             setProgress(0);
             setMessage('Could not upload the image!');
             setIsError(true);
         });
+    };
+
+    const renderPreviewControl = () => {
+        if (currentFile || props.previewLink) {
+            if ((currentFile && currentFile.type.startsWith("image")) || parseInt(props.previewType) === 2) {
+                return (
+                    <img style={{ width: 100 }} className="preview" src={previewImage || props.previewLink} alt="" />
+                );
+            }
+            if ((currentFile && currentFile.type.startsWith("video")) || parseInt(props.previewType) === 1) {
+                return (
+                    <video width="100" controls>
+                        <source src={previewImage || props.previewLink} />
+                    </video>
+                );
+            }
+        }
     };
 
     return (
@@ -81,13 +104,13 @@ const UploadImages = (props) => {
                             name="btn-upload"
                             style={{ display: 'none' }}
                             type="file"
-                            accept="image/*"
+                            accept={props.uploadType || "image/* video/*"}
                             onChange={selectFile} />
                         <Button
                             className="btn-choose"
                             variant="outlined"
                             component="span" >
-                            Choose Image
+                            Choose File
                         </Button>
                     </label>
                 </div>
@@ -111,7 +134,7 @@ const UploadImages = (props) => {
                 <div className="col-4">
                     {(previewImage || props.previewLink)&& (
                     <div>
-                            <img style={{ width: 100 }} className="preview" src={previewImage || props.previewLink} alt="" />
+                        {renderPreviewControl()}
                     </div>)}
                 </div>
                 <div className="col-6">
@@ -140,6 +163,8 @@ UploadImages.propTypes = {
     handleImageUpload: PropTypes.func.isRequired,
     handleImageSelect: PropTypes.func.isRequired,
     previewLink: PropTypes.string,
+    uploadType: PropTypes.string.isRequired,
+    previewType: PropTypes.number,
 };
 
 export { UploadImages };

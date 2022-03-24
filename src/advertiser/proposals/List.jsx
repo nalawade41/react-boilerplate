@@ -290,7 +290,7 @@ function List({ match }) {
     const loadSearchFilter = (value) => {
         setFilter(value);
     };
-    debugger;
+
     return (
         <div>
             <h1>Manage Proposals</h1>

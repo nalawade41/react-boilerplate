@@ -158,7 +158,6 @@ const Filter = ({ handleSearchClick, filterColumns}) => {
     const renderFilterOptions = () => {
         return filterColumns.map((obj,index) => {
             if (obj.filterAble) {
-                debugger;
                 return (
                     <option key={index} value={obj.columnName}>{obj.headerName}</option>
                 );
@@ -271,9 +270,9 @@ function List({ match }) {
                     <Link to={`${path}/edit/${params.row.id}`}  className="mr-1">
                         <EditIcon fontSize="large" />
                     </Link>
-                    <Link to={`${path}/view/${params.row.id}`} className="mr-1">
+                    {/* <Link to={`${path}/view/${params.row.id}`} className="mr-1">
                         <PreviewIcon color="primary" onClick={() => { }} fontSize="large" />
-                    </Link>
+                    </Link> */}
                 </strong>
             ),
         }
