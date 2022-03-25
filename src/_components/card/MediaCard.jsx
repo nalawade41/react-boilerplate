@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -26,7 +27,7 @@ const ExpandMore = styled((props) => {
     }),
 }));
 
-const RecipeReviewCard = () => {
+const RecipeReviewCard = (props) => {
     const [expanded, setExpanded] = React.useState(false);
 
     const handleExpandClick = () => {
@@ -46,7 +47,7 @@ const RecipeReviewCard = () => {
                         <MoreVertIcon />
                     </IconButton>
                 }
-                title="Shrimp and Chorizo Paella"
+                title={props.content.title}
                 subheader="September 14, 2016"
             />
             <CardMedia
@@ -109,6 +110,10 @@ const RecipeReviewCard = () => {
             </Collapse>
         </Card>
     );
+}
+
+RecipeReviewCard.propTypes = {
+    content: PropTypes.object,
 }
 
 export { RecipeReviewCard };

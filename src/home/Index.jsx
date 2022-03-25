@@ -18,10 +18,10 @@ function Home() {
     }
 
     const renderMediaLibrary = () => {
-        return [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5}, { id: 6 }, { id: 7 }, { id: 72 }].map(obj => {
+        return contentLibrary.map(obj => {
             return (
                 <div className="col-3 pb-4">
-                    <RecipeReviewCard key={obj.id} />
+                    <RecipeReviewCard key={obj.id} content={ obj}/>
                 </div>
             );
         })  
