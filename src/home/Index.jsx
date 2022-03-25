@@ -18,10 +18,10 @@ function Home() {
     }
 
     const renderMediaLibrary = () => {
-        return contentLibrary.map(obj => {
+        return contentLibrary.map((obj, index) => {
             return (
-                <div className="col-3 pb-4">
-                    <RecipeReviewCard key={obj.id} content={ obj}/>
+                <div key={obj.id} className="col-3 pb-4">
+                    <RecipeReviewCard content={ obj}/>
                 </div>
             );
         })  
@@ -34,9 +34,9 @@ function Home() {
     return (
         <div className="p-4">
             <div className="container">
-                <dic className="row">
+                <div className="row">
                     {renderMediaLibrary()}
-                </dic>
+                </div>
             </div>
         </div>
     );
